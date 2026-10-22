@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EduCRM — Enquiry, Admission, Follow-up, Fees</title>
+<style>
+:root{--bg:#f3f5f9;--panel:#fff;--panel2:#f8fafc;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--primary:#2563eb;--primary-d:#1d4ed8;--soft:#eff6ff;--ok:#059669;--warn:#d97706;--bad:#dc2626;--side:#0f172a;--side-t:#94a3b8;--side-h:#1e293b;--shadow:0 1px 2px rgba(15,23,42,.05),0 1px 3px rgba(15,23,42,.06)}
+[data-theme=dark]{--bg:#0a0f1c;--panel:#111827;--panel2:#161f31;--text:#e5e7eb;--muted:#94a3b8;--line:#1f2a3f;--primary:#3b82f6;--primary-d:#2563eb;--soft:#172554;--side:#070b15;--side-h:#131c2e;--shadow:none}
+*{box-sizing:border-box}html,body{margin:0}
+body{font:14px/1.5 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-4px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:248px;background:var(--side);padding:20px 14px;position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column;gap:2px;z-index:30;transition:transform .2s}
+.brand{display:flex;align-items:center;gap:12px;padding:2px 10px 22px;color:#fff}
+.brand .mark{width:38px;height:38px;border-radius:10px;background:var(--primary);display:grid;place-items:center}
+.brand .mark svg{width:21px;height:21px}
+.brand b{display:block;font-size:16px;letter-spacing:.01em}.brand small{color:var(--side-t);font-size:11.5px}
+.sect{color:#64748b;font-size:11px;font-weight:600;letter-spacing:.1em;padding:6px 12px 8px;text-transform:uppercase}
+.nav a,.side-link{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:var(--side-t);font-weight:500;background:none;border:0;cursor:pointer;width:100%;text-align:left;text-decoration:none}
+.nav a:hover,.side-link:hover{background:var(--side-h);color:#fff;text-decoration:none}
+.nav a.active{background:var(--primary);color:#fff}
+.badge{margin-left:auto;background:var(--bad);color:#fff;border-radius:99px;font-size:11px;font-weight:600;padding:1px 8px}
+.side-foot{margin-top:auto;border-top:1px solid #1e293b;padding-top:12px;display:grid;gap:2px}
+.main{margin-left:248px;flex:1;min-width:0}
+.topbar{position:sticky;top:0;z-index:20;background:var(--panel);display:flex;gap:12px;align-items:center;padding:14px 28px;border-bottom:1px solid var(--line)}
+.topbar h1{font-size:20px;line-height:1.2;margin:0;font-weight:650}
+.crumb{color:var(--muted);font-size:12.5px}
+.sp{flex:1}
+.icon-btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;width:38px;height:38px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
+.icon-btn:hover{background:var(--panel2);color:var(--text)}
+.menu-btn{display:none}
+.content{padding:24px 28px 60px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:550;box-shadow:var(--shadow)}
+.btn:hover{background:var(--panel2)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}.btn.primary:hover{background:var(--primary-d)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}.btn.ok:hover{filter:brightness(.93)}
+.btn.danger{color:var(--bad)}.btn.sm{padding:4px 10px;font-size:12.5px;box-shadow:none}
+.btn svg.i{width:16px;height:16px}
+.grid{display:grid;gap:18px}
+.tiles{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-bottom:20px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);min-width:0}
+.card h3{margin:0 0 12px;font-size:15px;font-weight:650}
+.card.flush{padding:0;overflow:hidden}.card.flush h3{padding:16px 20px 12px;margin:0;border-bottom:1px solid var(--line)}
+.tile{cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:center;transition:box-shadow .15s,border-color .15s}
+.tile:hover{border-color:var(--c);box-shadow:0 4px 14px rgba(15,23,42,.08)}
+.ticon{grid-row:1/4;width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 12%,transparent);color:var(--c)}
+.ticon svg{width:22px;height:22px}
+.tile .label{color:var(--muted);font-size:12.5px;font-weight:550;text-transform:uppercase;letter-spacing:.05em}
+.tile .val{font-size:28px;font-weight:700;line-height:1.15}
+.tile .sub{font-size:12.5px;color:var(--muted)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center}
+.toolbar input,.field input,.field select,.field textarea,.pager select{padding:8px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.toolbar input:focus,.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid color-mix(in srgb,var(--primary) 35%,transparent);border-color:var(--primary)}
+.toolbar .grow{flex:1;min-width:200px}
+.tabs{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px}
+.tabs button{border:0;background:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-weight:550;color:var(--muted)}
+.tabs button.on{background:var(--soft);color:var(--primary)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:13.5px}
+th{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-weight:600;background:var(--panel2)}
+th:first-child,td:first-child{padding-left:20px}th:last-child,td:last-child{padding-right:20px}
+tbody tr:last-child td{border-bottom:0}
+tr.row:hover td{background:var(--panel2)}
+table.fx{table-layout:fixed}
+table.fx td,table.fx th{overflow:hidden;text-overflow:ellipsis}
+td.cl>*{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.ca{white-space:normal}
+.act{display:flex;gap:6px;flex-wrap:wrap}
+@media (min-width:861px){.act{flex-wrap:nowrap}.act .btn{white-space:nowrap}}
+table.fx th,table.fx td{white-space:nowrap}
+.wa1{width:220px}.wd{width:132px}.wt{width:165px}.wa2{width:185px}.wa3{width:95px}.ws{width:115px}.wm{width:135px}
+.dl{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin:12px 0}
+.dl .sub{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.dl>div{min-width:0;word-break:break-word}
+.sub{color:var(--muted);font-size:12.5px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:var(--c,#64748b);background:color-mix(in srgb,var(--c,#64748b) 13%,transparent)}
+.pill:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c,#64748b)}
+.empty{color:var(--muted);text-align:center;padding:28px}
+.up{color:var(--ok)}.down{color:var(--bad)}.warn{color:var(--warn)}
+.item{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border:0}.item .grow{flex:1;min-width:0}
+.item .t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task input{width:17px;height:17px;accent-color:var(--primary)}
+.progress{height:6px;background:var(--line);border-radius:99px;overflow:hidden;min-width:90px;margin-top:5px}
+.progress div{height:100%;background:var(--ok)}
+.pager{display:flex;align-items:center;gap:14px;padding:12px 20px;border-top:1px solid var(--line);flex-wrap:wrap}
+.pager .grow{flex:1}
+.pgs{display:flex;gap:4px}
+.pgs button{min-width:32px;height:32px;border:1px solid var(--line);background:var(--panel);border-radius:8px;cursor:pointer;font-weight:550}
+.pgs button:hover:not(:disabled){background:var(--panel2)}
+.pgs button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.pgs button:disabled{opacity:.4;cursor:default}
+.pgs .gap{align-self:center;color:var(--muted);padding:0 2px}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--panel);border-radius:14px;width:min(680px,100%);max-height:92vh;overflow:auto;padding:22px 24px;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.modal h2{margin:0 0 16px;font-size:18px;font-weight:650}.modal h3{margin:18px 0 6px;font-size:14px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--muted);font-weight:550}
+.field input,.field select,.field textarea{width:100%;color:var(--text);font-size:14px;font-weight:400}
+.full{grid-column:1/-1}
+.preview{background:var(--panel2);border:1px solid var(--line);border-left:3px solid #25d366;border-radius:8px;padding:10px 12px;margin:0 0 14px;font-size:13.5px}
+input[readonly],select:disabled{background:var(--panel2)!important;color:var(--muted)}
+.dd{position:relative;display:inline-block;min-width:150px}
+.field .dd{display:block;width:100%}
+.dd>select{position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none}
+.dd-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);cursor:pointer;font-weight:400;text-align:left;transition:border-color .12s,box-shadow .12s}
+.dd-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd-btn svg.i{width:16px;height:16px;color:var(--muted);transition:transform .15s}
+.dd-btn:hover{border-color:var(--primary)}
+.dd-btn:focus-visible,.dd.open .dd-btn{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 20%,transparent)}
+.dd.open .dd-btn svg.i{transform:rotate(180deg)}
+.dd.ph .dd-btn span{color:var(--muted)}
+.dd.disabled .dd-btn{background:var(--panel2);color:var(--muted);cursor:not-allowed}
+.dd.disabled .dd-btn:hover{border-color:var(--line)}
+.pager .dd{min-width:72px}.pager .dd-btn{padding:5px 9px}
+.dd-list{position:fixed;z-index:90;max-height:260px;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 34px rgba(15,23,42,.2);padding:4px}
+.dd-item{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:8px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;color:var(--text)}
+.dd-item.hl{background:var(--soft)}
+.dd-item.sel{color:var(--primary);font-weight:600}
+.dd-item svg.i{width:16px;height:16px}
+.combo{position:relative}
+.cb-list{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 28px rgba(15,23,42,.22);max-height:230px;overflow:auto;z-index:10}
+.cb-item{padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;color:var(--text);font-weight:400}
+.cb-item b{font-weight:600}.cb-item .sub{text-align:right}
+.cb-item.hl,.cb-item:hover{background:var(--soft)}
+.cb-none{padding:10px 12px;color:var(--muted)}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.modal .actions{position:sticky;bottom:-22px;z-index:5;background:var(--panel);margin:16px -24px -22px;padding:14px 24px;border-top:1px solid var(--line)}
+html.modal-open,html.modal-open body{overflow:hidden}
+.overlay{overscroll-behavior:contain}.modal{overscroll-behavior:contain}
+.modal.wide{width:min(900px,100%)}
+.modal.wide .form{grid-template-columns:repeat(3,1fr);gap:12px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.summary div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.summary b{display:block;font-size:18px}
+.toasts{position:fixed;right:20px;bottom:20px;display:grid;gap:8px;z-index:80}
+.toast{background:#0f172a;color:#fff;padding:10px 16px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);border-left:3px solid var(--ok)}
+.scrim{display:none}
+@media (max-width:860px){
+.sidebar{transform:translateX(-100%)}.sidebar.open{transform:none}
+.scrim.open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:25}
+.main{margin-left:0}.menu-btn{display:grid}.topbar{padding:12px 14px}.content{padding:16px 14px 60px}
+.hm{display:none}.wa1,.wa2,.wa3{width:104px}th,td{padding:12px 10px}.dl{grid-template-columns:1fr}.modal.wide .form{grid-template-columns:1fr}.form{grid-template-columns:1fr}.g2{grid-template-columns:1fr}.summary{grid-template-columns:1fr}.crumb{display:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+<symbol id="i-cap" viewBox="0 0 24 24"><path d="M22 9 12 4 2 9l10 5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5M22 9v6"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+<symbol id="i-wallet" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20M16 15h2"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.5A6.5 6.5 0 0 1 21.5 20"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+</defs></svg>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><span class="mark"><svg class="i"><use href="#i-cap"/></svg></span><div><b>EduCRM</b><small>Admissions Suite</small></div></div>
+  <div class="sect">Menu</div>
+  <nav class="nav" id="nav">
+    <a href="#home" data-r="home"><svg class="i"><use href="#i-home"/></svg> Home</a>
+    <a href="#enquiries" data-r="enquiries"><svg class="i"><use href="#i-file"/></svg> Enquiries</a>
+    <a href="#admissions" data-r="admissions"><svg class="i"><use href="#i-cap"/></svg> Admissions</a>
+    <a href="#followups" data-r="followups"><svg class="i"><use href="#i-phone"/></svg> Follow-ups <span class="badge" id="badge" hidden></span></a>
+    <a href="#fees" data-r="fees"><svg class="i"><use href="#i-wallet"/></svg> Fees</a>
+  </nav>
+  <div class="sect" style="margin-top:14px">Setup</div>
+  <nav class="nav">
+    <a href="#courses" data-r="courses"><svg class="i"><use href="#i-book"/></svg> Classes</a>
+    <a href="#staff" data-r="staff"><svg class="i"><use href="#i-users"/></svg> Staff</a>
+  </nav>
+  <div class="side-foot"><button class="side-link" data-a="reset"><svg class="i"><use href="#i-reset"/></svg> Reset demo data</button></div>
+</aside>
+<div class="scrim" id="scrim" data-a="menu"></div>
+<div class="main">
+  <header class="topbar">
+    <button class="icon-btn menu-btn" data-a="menu" aria-label="Menu"><svg class="i"><use href="#i-menu"/></svg></button>
+    <div><h1 id="title">Home</h1><div class="crumb" id="crumb"></div></div><span class="sp"></span>
+    <button class="btn primary" data-a="enq" data-id=""><svg class="i"><use href="#i-plus"/></svg> New enquiry</button>
+    <button class="icon-btn" data-a="theme" id="themeBtn" aria-label="Toggle theme"></button>
+  </header>
+  <main class="content" id="view"></main>
+</div>
+</div>
+<div id="modalRoot"></div><div class="toasts" id="toasts"></div>
+
+<script>
+(function(){
+"use strict";
+const KEY="edu-crm-v3",THEME_KEY="edu-crm-theme";
+const SOURCES=["Website","Walk-in","Referral","Social Media","Education Fair","Google Ads"];
+const TASK_TYPES=["Call","WhatsApp","Email","Campus Visit","Document Collection","Fee Reminder"];
+const MODES=["Cash","Online"];
+const ROLES=["Counsellor","Admission Officer","Accountant","Manager"];
+const COUNSELORS=["Priya Sharma","Rahul Verma","Anjali Nair","Vikram Singh"];
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const today=()=>iso(new Date());
+const parseD=s=>new Date(s+"T00:00:00");
+const addDays=(s,n)=>{const d=parseD(s);d.setDate(d.getDate()+n);return iso(d)};
+const fmtDate=s=>s?parseD(s).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"—";
+function inr(n){n=Math.round(n||0);if(n>=1e7)return"₹"+(n/1e7).toFixed(2).replace(/\.?0+$/,"")+" Cr";if(n>=1e5)return"₹"+(n/1e5).toFixed(1).replace(/\.0$/,"")+" L";return"₹"+n.toLocaleString("en-IN")}
+const inrFull=n=>"₹"+Math.round(n||0).toLocaleString("en-IN");
+const pill=(t,c)=>`<span class="pill" style="--c:${c}">${esc(t)}</span>`;
+const ic=n=>`<svg class="i"><use href="#i-${n}"/></svg>`;
+const themeIcon=t=>{$("#themeBtn").innerHTML=ic(t==="dark"?"sun":"moon")};
+const STATUS_C={Open:"#0ea5e9",Admitted:"#16a34a",Closed:"#94a3b8"};
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;$("#toasts").appendChild(t);setTimeout(()=>t.remove(),2800)}
+
+/* ---------- state ---------- */
+let S;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+function load(){try{const r=localStorage.getItem(KEY);if(r){const d=JSON.parse(r);if(d&&d.enquiries){
+  if(!d.staff){const names=[...new Set([...COUNSELORS,...d.enquiries.map(e=>e.counselor)])].filter(Boolean);d.n.s=1;d.staff=names.map(n=>({id:d.n.s++,name:n,phone:"",email:"",role:"Counsellor"}))}
+  d.staff.forEach(x=>{if(!x.code)x.code="STF"+(1000+x.id)});
+  d.admissions.forEach(a=>a.payments.forEach(p=>{if(!MODES.includes(p.mode))p.mode="Online"}));
+  return d}}}catch(e){}return null}
+const staffNames=()=>S.staff.map(x=>x.name);
+const staffOf=id=>S.staff.find(x=>x.id===id);
+const course=id=>S.courses.find(c=>c.id===id);
+const enq=id=>S.enquiries.find(e=>e.id===id);
+const adm=id=>S.admissions.find(a=>a.id===id);
+const paid=a=>a.payments.reduce((x,p)=>x+p.amount,0);
+const pending=a=>Math.max(0,a.total-paid(a));
+const feeStatus=a=>{const p=paid(a);return p>=a.total?["Paid","#16a34a"]:p>0?["Partial","#d97706"]:["Unpaid","#dc2626"]};
+const receiptNo=()=>"RCP-"+String(S.n.r++).padStart(4,"0");
+const openTasks=()=>S.tasks.filter(t=>!t.done);
+const overdueN=()=>openTasks().filter(t=>t.due<today()).length;
+const nextTask=eid=>S.tasks.filter(t=>t.enquiryId===eid&&!t.done).sort((a,b)=>a.due.localeCompare(b.due))[0];
+
+/* ---------- seed ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function seed(){
+  const rnd=mulberry32(7),pick=a=>a[Math.floor(rnd()*a.length)];
+  const courses=[["Nursery",42000],["LKG",45000],["UKG",48000],["Class 1",52000],["Class 2",54000],["Class 3",56000],["Class 4",58000],["Class 5",60000],["Class 6",66000],["Class 7",68000],["Class 8",70000],["Class 9",76000],["Class 10",80000],["Class 11",92000],["Class 12",96000]].map((c,i)=>({id:i+1,name:c[0],fee:c[1]}));
+  const fn=["Aarav","Vivaan","Aditya","Arjun","Rohan","Karan","Ishaan","Rahul","Siddharth","Kabir","Ananya","Diya","Priya","Sneha","Neha","Kavya","Meera","Riya","Pooja","Isha","Tanvi","Nikhil","Harsh","Dev","Sanya","Aisha","Zoya","Varun","Manish","Divya"];
+  const ln=["Sharma","Verma","Iyer","Nair","Reddy","Patel","Gupta","Singh","Khan","Joshi","Mehta","Das","Menon","Bose","Kapoor","Rao"];
+  const cities=["Bengaluru","Mumbai","Delhi","Hyderabad","Chennai","Pune","Kolkata","Kochi"];
+  const T=today(),enquiries=[],admissions=[],tasks=[],n={e:1,a:1,t:1,p:1,c:16,r:1,s:5};const rc=()=>"RCP-"+String(n.r++).padStart(4,"0");
+  for(let i=0;i<45;i++){
+    const age=Math.floor(rnd()*120),c=pick(courses),name=pick(fn)+" "+pick(ln);
+    const e={id:n.e++,name,phone:"9"+String(Math.floor(rnd()*1e9)).padStart(9,"0"),email:name.toLowerCase().replace(" ",".")+"@gmail.com",city:pick(cities),courseId:c.id,source:pick(SOURCES),counselor:pick(COUNSELORS),created:addDays(T,-age),notes:pick(["","Parent will visit campus","Asked about transport facility","Asked about fee concession","Comparing with another school"]),status:"Open"};
+    const r=rnd();
+    if(age>14&&r<.32){
+      e.status="Admitted";
+      const total=Math.round(c.fee*pick([1,1,.95,.9])/500)*500,adate=addDays(e.created,3+Math.floor(rnd()*10)),a={id:n.a++,enquiryId:e.id,courseId:c.id,total,date:adate>T?T:adate,payments:[],nextDue:""};
+      const mode=rnd(),first=mode<.2?total:mode<.8?Math.round(total*pick([.25,.4,.5])/500)*500:0;
+      if(first)a.payments.push({id:n.p++,amount:first,date:a.date,mode:pick(MODES),receipt:rc()});
+      if(first<total){a.nextDue=addDays(T,Math.floor(rnd()*30)-8);
+        if(rnd()<.5&&first>0){const second=Math.round((total-first)*.5/500)*500;if(second>0){a.payments.push({id:n.p++,amount:second,date:addDays(T,-Math.floor(rnd()*20)),mode:pick(MODES),receipt:rc()})}}
+        if(paid(a)<total)tasks.push({id:n.t++,enquiryId:e.id,admissionId:a.id,type:"Fee Reminder",due:a.nextDue,note:"Collect next instalment",done:false})}
+      admissions.push(a);
+    }else if(age>20&&r<.5)e.status="Closed";
+    else if(rnd()<.8)tasks.push({id:n.t++,enquiryId:e.id,type:pick(TASK_TYPES.slice(0,5)),due:addDays(T,Math.floor(rnd()*14)-5),note:pick(["Share fee structure","Confirm campus visit","Collect documents","Ask for decision","Discuss scholarship"]),done:false});
+    enquiries.push(e);
+  }
+  const staff=COUNSELORS.map((nm,i)=>({id:i+1,name:nm,phone:"98"+String(76543210+i*1111111),email:nm.toLowerCase().replace(" ",".")+"@educrm.in",role:"Counsellor",code:"STF"+(1001+i)}));
+  return{courses,staff,enquiries,admissions,tasks,n};
+}
+
+/* ---------- views ---------- */
+function homeList(){
+  const T=today();
+  if(ui.htab==="Enquiries"){
+    const pg=paginate("hEnq",S.enquiries.slice().sort((a,b)=>b.created.localeCompare(a.created)||b.id-a.id));
+    return`<table class="fx"><thead><tr><th>Name</th><th class="hm wm">Mobile</th><th class="hm">Email</th><th class="hm wd">Enquired on</th><th class="ws">Status</th><th class="wa2">Actions</th></tr></thead><tbody>${pg.rows.map(e=>`<tr class="row"><td class="cl"><b>${esc(e.name)}</b></td><td class="cl hm">${esc(e.phone)}</td><td class="cl hm">${esc(e.email||"—")}</td><td class="hm">${fmtDate(e.created)}</td><td>${pill(e.status,STATUS_C[e.status])}</td><td class="ca"><div class="act"><button class="btn sm" data-a="enq-view" data-id="${e.id}">View</button>${e.status==="Open"?`<button class="btn sm ok" data-a="admit" data-id="${e.id}">Admit</button>`:""}</div></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No enquiries yet.</td></tr>`}</tbody></table>${pg.html}`;
+  }
+  const pg=paginate("hFu",openTasks().filter(t=>enq(t.enquiryId)).sort((a,b)=>a.due.localeCompare(b.due)));
+  return`<table class="fx"><thead><tr><th>Student</th><th class="hm wm">Mobile</th><th class="wt">Type</th><th class="hm">Note</th><th class="wd">Due date</th><th class="wa1">Actions</th></tr></thead><tbody>${pg.rows.map(t=>{const e=enq(t.enquiryId),od=t.due<T;
+    return`<tr class="row"><td class="cl"><b>${esc(e.name)}</b></td><td class="cl hm">${esc(e.phone)}</td><td class="cl">${esc(t.type)}</td><td class="cl hm">${esc(t.note||"—")}</td><td class="${od?"down":""}">${fmtDate(t.due)}</td><td class="ca"><div class="act"><button class="btn sm ok" data-a="task-toggle" data-id="${t.id}">Done</button><button class="btn sm" data-a="${t.admissionId?"adm":"enq-view"}" data-id="${t.admissionId||e.id}">View</button><button class="btn sm danger" data-a="del-task" data-id="${t.id}">Delete</button></div></td></tr>`}).join("")||`<tr><td colspan="6" class="empty">All caught up — no pending follow-ups.</td></tr>`}</tbody></table>${pg.html}`;
+}
+function viewHome(){
+  const T=today(),open=S.enquiries.filter(e=>e.status==="Open"),newWeek=S.enquiries.filter(e=>e.created>=addDays(T,-7)).length;
+  const due=openTasks().filter(t=>t.due===T).length,over=overdueN();
+  const totalFee=S.admissions.reduce((x,a)=>x+a.total,0),coll=S.admissions.reduce((x,a)=>x+paid(a),0);
+  const dues=S.admissions.filter(a=>pending(a)>0).sort((a,b)=>(a.nextDue||"9").localeCompare(b.nextDue||"9")).slice(0,6);
+  return`<div class="grid tiles">
+    <div class="card tile" style="--c:#0ea5e9" data-go="enquiries"><div class="ticon">${ic("file")}</div><div class="label">Enquiries</div><div class="val">${open.length}</div><div class="sub">open · ${newWeek} new this week</div></div>
+    <div class="card tile" style="--c:#16a34a" data-go="admissions"><div class="ticon">${ic("cap")}</div><div class="label">Admissions</div><div class="val">${S.admissions.length}</div><div class="sub">${S.enquiries.length?Math.round(S.admissions.length/S.enquiries.length*100):0}% of all enquiries</div></div>
+    <div class="card tile" style="--c:#d97706" data-go="followups"><div class="ticon">${ic("phone")}</div><div class="label">Follow-ups</div><div class="val">${due+over}</div><div class="sub"><span class="${over?"down":""}">${over} overdue</span> · ${due} due today</div></div>
+    <div class="card tile" style="--c:#4f46e5" data-go="fees"><div class="ticon">${ic("wallet")}</div><div class="label">Fees pending</div><div class="val">${inr(totalFee-coll)}</div><div class="sub">${inr(coll)} collected of ${inr(totalFee)}</div></div>
+  </div>
+  <div class="toolbar"><div class="tabs"><button class="${ui.htab==="Enquiries"?"on":""}" data-htab="Enquiries">Enquiries (${S.enquiries.length})</button><button class="${ui.htab==="Enquiries"?"":"on"}" data-htab="Follow-ups">Follow-ups (${openTasks().filter(t=>enq(t.enquiryId)).length} pending)</button></div><span class="sp"></span><button class="btn" data-go="${ui.htab==="Enquiries"?"enquiries":"followups"}">View all</button></div>
+  <div class="card flush" style="margin-bottom:18px">${homeList()}</div>
+  <div class="grid">
+    <div class="card"><h3>Fees to collect</h3>${dues.map(a=>{const e=enq(a.enquiryId),od=a.nextDue&&a.nextDue<T;return`<div class="item"><div class="grow"><div class="t">${esc(e.name)}</div><div class="sub">${esc(course(a.courseId)?.name||"")} · ${a.nextDue?(od?"Overdue since ":"Due ")+fmtDate(a.nextDue):"No due date"}</div></div><b class="${od?"down":""}">${inrFull(pending(a))}</b><button class="btn sm ok" data-a="pay" data-id="${a.id}">Collect</button></div>`}).join("")||`<div class="empty">No pending fees</div>`}</div>
+  </div>`;
+}
+
+const ui={tab:"Open",ftab:"Today",q:"",size:10,page:{},htab:"Enquiries",fetab:"Pending",fq:"",fclass:"",fdue:"",fmode:"",ffrom:"",fto:""};
+function pager(key,total,p,pages,start){
+  if(!total)return"";
+  const nums=[];for(let i=1;i<=pages;i++)if(i===1||i===pages||Math.abs(i-p)<=1)nums.push(i);
+  let btns="",prev=0;
+  nums.forEach(i=>{if(prev&&i-prev>1)btns+=`<span class="gap">…</span>`;btns+=`<button class="${i===p?"on":""}" data-pg="${key}:${i}">${i}</button>`;prev=i});
+  return`<div class="pager"><span class="sub">Showing ${start+1}–${Math.min(start+ui.size,total)} of ${total}</span><span class="grow"></span><label class="sub">Rows per page <select data-size>${[10,25,50].map(n=>`<option${n===ui.size?" selected":""}>${n}</option>`).join("")}</select></label><div class="pgs"><button data-pg="${key}:${p-1}"${p<=1?" disabled":""} aria-label="Previous">‹</button>${btns}<button data-pg="${key}:${p+1}"${p>=pages?" disabled":""} aria-label="Next">›</button></div></div>`;
+}
+function paginate(key,arr){
+  const total=arr.length,pages=Math.max(1,Math.ceil(total/ui.size)),p=Math.min(Math.max(1,ui.page[key]||1),pages);
+  ui.page[key]=p;const start=(p-1)*ui.size;
+  return{rows:arr.slice(start,start+ui.size),html:pager(key,total,p,pages,start)};
+}
+function enqRows(){
+  const q=ui.q.trim().toLowerCase();
+  const all=S.enquiries.filter(e=>(ui.tab==="All"||e.status===ui.tab)&&(!q||[e.name,e.phone,e.email,e.city].some(x=>String(x).toLowerCase().includes(q)))).sort((a,b)=>b.created.localeCompare(a.created)||b.id-a.id);
+  const pg=paginate("enq",all),r=pg.rows;
+  return`<table class="fx"><thead><tr><th>Name</th><th class="hm wm">Mobile</th><th class="hm">Email</th><th class="hm wd">Enquired on</th><th class="hm wd">Follow-up</th><th class="ws">Status</th><th class="wa1">Actions</th></tr></thead><tbody>${r.map(e=>{const t=nextTask(e.id);
+    return`<tr class="row"><td class="cl"><b>${esc(e.name)}</b></td><td class="cl hm">${esc(e.phone)}</td><td class="cl hm">${esc(e.email||"—")}</td><td class="hm">${fmtDate(e.created)}</td><td class="hm">${t?`<span class="${t.due<today()?"down":""}">${fmtDate(t.due)}</span>`:"—"}</td><td>${pill(e.status,STATUS_C[e.status])}</td>
+    <td class="ca"><div class="act"><button class="btn sm" data-a="enq-view" data-id="${e.id}">View</button><button class="btn sm" data-a="enq" data-id="${e.id}">Edit</button>${e.status==="Open"?`<button class="btn sm ok" data-a="admit" data-id="${e.id}">Admit</button>`:""}</div></td></tr>`}).join("")||`<tr><td colspan="7" class="empty">No enquiries here.</td></tr>`}</tbody></table>${pg.html}`;
+}
+function viewEnquiries(){
+  const c=s=>s==="All"?S.enquiries.length:S.enquiries.filter(e=>e.status===s).length;
+  return`<div class="toolbar"><div class="tabs">${["Open","Admitted","Closed","All"].map(s=>`<button class="${ui.tab===s?"on":""}" data-tab="${s}">${s} (${c(s)})</button>`).join("")}</div><input class="grow" id="eq" type="search" placeholder="Search name, phone, email, city…" value="${esc(ui.q)}"><button class="btn" data-a="csv">${ic("download")} Export CSV</button></div><div class="card flush" id="enqTable">${enqRows()}</div>`;
+}
+
+function viewAdmissions(){
+  const pg=paginate("adm",S.admissions.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id));
+  return`<div class="toolbar"><span class="sub">${S.admissions.length} admissions</span><span class="sp"></span><button class="btn primary" data-a="new-adm">${ic("plus")} Create admission</button></div><div class="card flush"><table class="fx"><thead><tr><th>Student</th><th class="hm wm">Phone</th><th class="hm">Email</th><th class="hm">Class</th><th class="ws">Fee status</th><th class="wa2">Actions</th></tr></thead><tbody>${pg.rows.map(a=>{const e=enq(a.enquiryId),[fs,fc]=feeStatus(a);
+    return`<tr class="row"><td class="cl"><b>${esc(e.name)}</b></td><td class="cl hm">${esc(e.phone)}</td><td class="cl hm">${esc(e.email||"—")}</td><td class="cl hm">${esc(course(a.courseId)?.name||"—")}</td><td>${pill(fs,fc)}</td><td class="ca"><div class="act"><button class="btn sm" data-a="adm" data-id="${a.id}">View</button>${pending(a)>0?`<button class="btn sm ok" data-a="pay" data-id="${a.id}">Collect</button>`:""}</div></td></tr>`}).join("")||`<tr><td colspan="6" class="empty">No admissions yet. Open an enquiry and click <b>Admit</b>, or use <b>Create admission</b>.</td></tr>`}</tbody></table>${pg.html}</div>`;
+}
+
+function taskRow(t){
+  const e=enq(t.enquiryId);if(!e)return"";
+  const od=!t.done&&t.due<today();
+  return`<div class="item task"><input type="checkbox" data-toggle="${t.id}"${t.done?" checked":""} aria-label="Mark done"><div class="grow"><div class="t" style="${t.done?"text-decoration:line-through;color:var(--muted)":""}">${esc(t.type)} · <a href="#" data-a="${t.admissionId?"adm":"enq-view"}" data-id="${t.admissionId||e.id}">${esc(e.name)}</a></div><div class="sub">${esc(t.note)} · ${esc(e.phone)}</div></div><span class="${od?"down":""}">${od?"Overdue · ":""}${fmtDate(t.due)}</span><button class="btn sm danger" data-a="del-task" data-id="${t.id}" aria-label="Remove">✕</button></div>`;
+}
+function viewFollowups(){
+  const T=today(),f={Overdue:t=>!t.done&&t.due<T,Today:t=>!t.done&&t.due===T,Upcoming:t=>!t.done&&t.due>T,Completed:t=>t.done};
+  const valid=t=>enq(t.enquiryId),cnt=k=>S.tasks.filter(t=>valid(t)&&f[k](t)).length;
+  const list=S.tasks.filter(t=>valid(t)&&f[ui.ftab](t)).sort((a,b)=>ui.ftab==="Completed"?b.due.localeCompare(a.due):a.due.localeCompare(b.due));
+  const pg=paginate("fu",list);
+  return`<div class="toolbar"><div class="tabs">${Object.keys(f).map(k=>`<button class="${ui.ftab===k?"on":""}" data-ftab="${k}">${k} (${cnt(k)})</button>`).join("")}</div><span class="sp"></span><button class="btn primary" data-a="newtask" data-id="">${ic("plus")} New follow-up</button></div>
+  <div class="card flush"><table class="fx"><thead><tr><th>Student</th><th class="hm wm">Mobile</th><th class="wt">Type</th><th class="hm">Note</th><th class="wd">Due date</th><th class="wa1">Actions</th></tr></thead><tbody>${pg.rows.map(t=>{const e=enq(t.enquiryId),od=!t.done&&t.due<T;
+    return`<tr class="row"><td class="cl"><b>${esc(e.name)}</b></td><td class="cl hm">${esc(e.phone)}</td><td class="cl">${esc(t.type)}</td><td class="cl hm">${esc(t.note||"—")}</td><td class="${od?"down":""}">${fmtDate(t.due)}</td><td class="ca"><div class="act"><button class="btn sm ${t.done?"":"ok"}" data-a="task-toggle" data-id="${t.id}">${t.done?"Reopen":"Done"}</button><button class="btn sm" data-a="${t.admissionId?"adm":"enq-view"}" data-id="${t.admissionId||e.id}">View</button><button class="btn sm danger" data-a="del-task" data-id="${t.id}">Delete</button></div></td></tr>`}).join("")||`<tr><td colspan="6" class="empty">No ${ui.ftab.toLowerCase()} follow-ups.</td></tr>`}</tbody></table>${pg.html}</div>`;
+}
+
+const feeMatch=(q,...v)=>!q||v.some(x=>String(x||"").toLowerCase().includes(q));
+function feePending(){
+  const T=today(),q=ui.fq.trim().toLowerCase();
+  return S.admissions.filter(a=>{
+    if(pending(a)<=0)return false;const e=enq(a.enquiryId);if(!e)return false;
+    if(ui.fclass&&String(a.courseId)!==ui.fclass)return false;
+    if(ui.fdue==="Overdue"&&!(a.nextDue&&a.nextDue<T))return false;
+    if(ui.fdue==="Upcoming"&&!(a.nextDue&&a.nextDue>=T))return false;
+    if(ui.fdue==="None"&&a.nextDue)return false;
+    return feeMatch(q,e.name,e.phone);
+  }).sort((a,b)=>(a.nextDue||"9").localeCompare(b.nextDue||"9"));
+}
+function feePayments(){
+  const q=ui.fq.trim().toLowerCase();
+  return S.admissions.flatMap(a=>a.payments.map(p=>({...p,a}))).filter(p=>{
+    const e=enq(p.a.enquiryId);if(!e)return false;
+    if(ui.fclass&&String(p.a.courseId)!==ui.fclass)return false;
+    if(ui.fmode&&p.mode!==ui.fmode)return false;
+    if(ui.ffrom&&p.date<ui.ffrom)return false;
+    if(ui.fto&&p.date>ui.fto)return false;
+    return feeMatch(q,e.name,e.phone,p.receipt);
+  }).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+}
+function feeTable(){
+  const T=today();
+  if(ui.fetab==="Pending"){
+    const pg=paginate("pend",feePending());
+    return`<table class="fx"><thead><tr><th>Student</th><th class="hm wm">Mobile</th><th class="hm">Class</th><th class="wm">Pending</th><th class="hm wd">Next due</th><th class="wa2">Actions</th></tr></thead><tbody>${pg.rows.map(a=>{const e=enq(a.enquiryId),od=a.nextDue&&a.nextDue<T;
+      return`<tr class="row"><td class="cl"><b>${esc(e.name)}</b></td><td class="cl hm">${esc(e.phone)}</td><td class="cl hm">${esc(course(a.courseId)?.name||"—")}</td><td><b>${inrFull(pending(a))}</b></td><td class="hm ${od?"down":""}">${a.nextDue?fmtDate(a.nextDue):"—"}</td><td class="ca"><div class="act"><button class="btn sm" data-a="adm" data-id="${a.id}">View</button><button class="btn sm ok" data-a="pay" data-id="${a.id}">Collect</button></div></td></tr>`}).join("")||`<tr><td colspan="6" class="empty">No pending fees found.</td></tr>`}</tbody></table>${pg.html}`;
+  }
+  const pg=paginate("pay",feePayments());
+  return`<table class="fx"><thead><tr><th class="ws">Receipt</th><th class="hm wd">Date</th><th>Student</th><th class="hm">Class</th><th class="hm ws">Mode</th><th class="hm wm">Received by</th><th class="wm">Amount</th><th class="wa3">Actions</th></tr></thead><tbody>${pg.rows.map(p=>`<tr class="row"><td class="cl">${esc(p.receipt)}</td><td class="hm">${fmtDate(p.date)}</td><td class="cl"><b>${esc(enq(p.a.enquiryId).name)}</b></td><td class="cl hm">${esc(course(p.a.courseId)?.name||"—")}</td><td class="hm">${esc(p.mode)}</td><td class="cl hm">${esc(p.by||"—")}</td><td><b>${inrFull(p.amount)}</b></td><td class="ca"><div class="act"><button class="btn sm" data-a="adm" data-id="${p.a.id}">View</button></div></td></tr>`).join("")||`<tr><td colspan="8" class="empty">No payments found.</td></tr>`}</tbody></table>${pg.html}`;
+}
+function feeRefresh(){ui.page.pend=1;ui.page.pay=1;$("#feeTable").innerHTML=feeTable();tips()}
+function viewFees(){
+  const T=today(),ym=T.slice(0,7),all=S.admissions.flatMap(a=>a.payments.map(p=>({...p,a})));
+  const coll=all.reduce((x,p)=>x+p.amount,0),month=all.filter(p=>p.date.startsWith(ym)).reduce((x,p)=>x+p.amount,0);
+  const pend=S.admissions.filter(a=>pending(a)>0),overdue=pend.filter(a=>a.nextDue&&a.nextDue<T);
+  const sum=(l,v,c)=>`<div class="card tile" style="--c:${c};cursor:default"><div class="ticon">${ic("wallet")}</div><div class="label">${l}</div><div class="val" style="font-size:26px">${v}</div></div>`;
+  const isP=ui.fetab==="Pending";
+  const classSel=`<select data-ff="fclass">${opts(S.courses.map(c=>[c.id,c.name]),ui.fclass,"All classes")}</select>`;
+  const filters=isP
+    ?`${classSel}<select data-ff="fdue">${opts([["Overdue","Overdue"],["Upcoming","Due soon / upcoming"],["None","No due date"]],ui.fdue,"Any due date")}</select>`
+    :`${classSel}<select data-ff="fmode">${opts(MODES,ui.fmode,"All modes")}</select><label class="sub">From <input type="date" data-ff="ffrom" value="${esc(ui.ffrom)}"></label><label class="sub">To <input type="date" data-ff="fto" value="${esc(ui.fto)}"></label>`;
+  return`<div class="grid tiles">${sum("Collected (all time)",inr(coll),"#16a34a")}${sum("Collected this month",inr(month),"#0ea5e9")}${sum("Pending",inr(pend.reduce((x,a)=>x+pending(a),0)),"#d97706")}${sum("Overdue",inr(overdue.reduce((x,a)=>x+pending(a),0))+" · "+overdue.length+" students","#dc2626")}</div>
+  <div class="toolbar"><div class="tabs"><button class="${isP?"on":""}" data-fetab="Pending">Pending fees (${pend.length})</button><button class="${isP?"":"on"}" data-fetab="History">Payment history (${all.length})</button></div>
+  <input class="grow" id="fq" type="search" placeholder="${isP?"Search student name or mobile…":"Search student, mobile or receipt…"}" value="${esc(ui.fq)}">${filters}<button class="btn" data-a="fee-clear">Clear</button></div>
+  <div class="card flush" id="feeTable">${feeTable()}</div>`;
+}
+
+/* ---------- modals ---------- */
+function modal(h,cls=""){document.documentElement.classList.add("modal-open");$("#modalRoot").innerHTML=`<div class="overlay" data-a="overlay"><div class="modal ${cls}" role="dialog" aria-modal="true">${h}</div></div>`;const f=$("#modalRoot input:not([type=hidden]),#modalRoot select");f&&f.focus();tips()}
+const closeModal=()=>{$("#modalRoot").innerHTML="";document.documentElement.classList.remove("modal-open")};
+function confirmBox(msg,cb,label="Delete"){modal(`<h2>Please confirm</h2><p>${esc(msg)}</p><div class="actions"><button class="btn" data-a="close">Cancel</button><button class="btn danger" id="yes">${label}</button></div>`);$("#yes").onclick=()=>{closeModal();cb()}}
+const fld=(l,i,c="")=>`<label class="field ${c}">${l}${i}</label>`;
+const opts=(list,sel,all)=>(all?`<option value="">${all}</option>`:"")+list.map(o=>{const v=Array.isArray(o)?o[0]:o,t=Array.isArray(o)?o[1]:o;return`<option value="${esc(v)}"${String(v)===String(sel)?" selected":""}>${esc(t)}</option>`}).join("");
+const courseOpts=sel=>opts(S.courses.map(c=>[c.id,c.name+" — "+inrFull(c.fee)]),sel);
+
+function enqModal(id){
+  const e=id?enq(+id):{name:"",phone:"",email:"",city:"",courseId:S.courses[0]?.id,source:SOURCES[0],counselor:staffNames()[0]||"",notes:"",status:"Open"};
+  modal(`<h2>${id?"Edit enquiry":"New enquiry"}</h2><form id="enqForm" class="form" data-id="${id||""}">
+  ${fld("Student name *",`<input name="name" required value="${esc(e.name)}">`)}
+  ${fld("Phone *",`<input name="phone" required pattern="[0-9+ \\-]{7,15}" value="${esc(e.phone)}">`)}
+  ${fld("Email",`<input name="email" type="email" value="${esc(e.email)}">`)}
+  ${fld("City",`<input name="city" value="${esc(e.city)}">`)}
+  ${fld("Interested class",`<select name="courseId">${courseOpts(e.courseId)}</select>`)}
+  ${fld("How did they hear about us?",`<select name="source">${opts(SOURCES,e.source)}</select>`)}
+  ${fld("Staff",`<select name="counselor">${opts(staffNames(),e.counselor)}</select>`)}
+  ${e.status==="Admitted"?"":fld("Status",`<select name="status">${opts(["Open","Closed"],e.status)}</select>`)}
+  ${fld("Notes",`<textarea name="notes" rows="2">${esc(e.notes)}</textarea>`,"full")}
+  ${id?"":`${fld("First follow-up date",`<input name="fuDate" type="date" min="${today()}" value="${addDays(today(),1)}">`)}${fld("Follow-up type",`<select name="fuType">${opts(TASK_TYPES.slice(0,5),"Call")}</select>`)}`}
+  <div class="actions full"><button type="button" class="btn" data-a="close">Cancel</button><button class="btn primary">Save</button></div></form>`);
+}
+function newAdmModal(){
+  modal(`<h2>Create admission</h2><form id="admitForm" class="form" data-id="">
+  <div class="field full"><span>Search</span><div class="combo"><input type="text" id="cbInput" placeholder="Search an enquiry by name or phone — or leave blank for a new student" autocomplete="off"><input type="hidden" name="enquiryId" id="nEnq" value=""><div class="cb-list" id="cbList" hidden></div></div></div>
+  <div class="form full" id="nNew" style="grid-column:1/-1">
+  ${fld("Student name *",`<input name="name">`)}
+  ${fld("Phone *",`<input name="phone" pattern="[0-9+ \\-]{7,15}">`)}
+  ${fld("Email",`<input name="email" type="email">`)}
+  ${fld("City",`<input name="city">`)}
+  ${fld("Source",`<select name="source">${opts(SOURCES,"Walk-in")}</select>`)}
+  </div>
+  ${fld("Class *",`<select name="courseId" id="aCourse" required>${opts(S.courses.map(c=>[c.id,c.name+" — "+inrFull(c.fee)]),"","Select class")}</select>`)}
+  ${fld("Staff *",`<select name="counselor" id="aStaff" required>${opts(staffNames(),"","Select staff")}</select>`)}
+  ${fld("Class fee (₹)",`<input name="fee" id="aFee" readonly placeholder="—">`)}
+  ${fld("Discount (₹)",`<input name="discount" id="aDisc" type="number" min="0" step="1" placeholder="0">`)}
+  ${fld("Fee after discount (₹)",`<input id="aNet" readonly placeholder="—">`)}
+  ${fld("Admission date *",`<input name="date" type="date" required>`)}
+  ${fld("Amount paid now (₹)",`<input name="amount" id="aPaid" type="number" min="0" step="1" placeholder="0">`)}
+  ${fld("Pending amount (₹)",`<input id="aPend" readonly placeholder="—">`)}
+  ${fld("Payment mode *",`<select name="mode" required>${opts(MODES,"","Select mode")}</select>`)}
+  ${fld("Next payment due date",`<input name="nextDue" type="date" min="${today()}">`)}
+  <p class="hint full">Pick an existing enquiry, or add a new student directly. Leave "paid now" blank if no money was received yet.</p>
+  <div class="actions full"><button type="button" class="btn" data-a="close">Cancel</button><button class="btn ok">Confirm admission</button></div></form>`,"wide");
+}
+function admitModal(id){
+  const e=enq(+id),c=course(e.courseId);
+  modal(`<h2>Admit ${esc(e.name)}</h2><form id="admitForm" class="form" data-id="${e.id}">
+  ${fld("Class",`<select name="courseId" id="aCourse">${courseOpts(e.courseId)}</select>`)}
+  ${fld("Staff",`<select name="counselor" id="aStaff">${opts(staffNames(),e.counselor)}</select>`)}
+  ${fld("Class fee (₹)",`<input name="fee" id="aFee" readonly value="${c?c.fee:0}">`)}
+  ${fld("Discount (₹)",`<input name="discount" id="aDisc" type="number" min="0" step="1" value="0">`)}
+  ${fld("Fee after discount (₹)",`<input id="aNet" readonly value="${c?inrFull(c.fee):0}">`)}
+  ${fld("Admission date",`<input name="date" type="date" required value="${today()}">`)}
+  ${fld("Amount paid now (₹)",`<input name="amount" id="aPaid" type="number" min="0" step="1" value="0">`)}
+  ${fld("Pending amount (₹)",`<input id="aPend" readonly value="${c?inrFull(c.fee):0}">`)}
+  ${fld("Payment mode",`<select name="mode">${opts(MODES,"Online")}</select>`)}
+  ${fld("Next payment due date",`<input name="nextDue" type="date" min="${today()}">`)}
+  <p class="hint full">Leave "paid now" at 0 if no money was received yet. A fee reminder is added to follow-ups if a due date is set.</p>
+  <div class="actions full"><button type="button" class="btn" data-a="close">Cancel</button><button class="btn ok">Confirm admission</button></div></form>`,"wide");
+}
+const waNormalize=v=>{let d=String(v).replace(/\D/g,"");if(d.length===10)d="91"+d;return d};
+const waFormat=d=>"+"+d.replace(/^(\d{2})(\d{5})(\d{5})$/,"$1 $2 $3");
+/* Integration point: replace the body with the real WhatsApp / payment-link API call (should resolve when sent). */
+async function sendPaymentLink(a,number,amount){
+  a.links=a.links||[];
+  a.links.push({number,date:today(),amount:amount||pending(a)});
+}
+function waModal(id,o){
+  const a=adm(+id),e=enq(a.enquiryId),c=course(a.courseId),amt=o?.amount||pending(a);
+  modal(`<h2>Send payment link on WhatsApp</h2>
+  <p class="hint">${o?.back?`Online payment for <b>${esc(e.name)}</b>. Amount: <b>${inrFull(amt)}</b>. The payment is recorded once it is paid through the link.`:`Admission confirmed for <b>${esc(e.name)}</b>. Pending fee: <b>${inrFull(amt)}</b>.`}</p>
+  <div class="preview">Hi ${esc(e.name)}, ${o?.back?"please pay":"your admission"+(c?" to "+esc(c.name):"")+" is confirmed. Please pay"} ${inrFull(amt)} using this link: <i>[payment link]</i></div>
+  <form id="waForm" class="form" data-id="${a.id}" data-amount="${amt}">
+  ${fld("WhatsApp number *",`<input name="wa" type="tel" required pattern="[0-9+ \\-]{10,15}" value="${esc(e.phone)}">`,"full")}
+  <p class="hint full">Pre-filled from the student's phone. Edit it if the link should go to another number, such as a parent's.</p>
+  <div class="actions full">${o?.back?`<button type="button" class="btn" data-a="pay-back">Back</button>`:`<button type="button" class="btn" data-a="close">Skip for now</button>`}<button class="btn ok">Send on WhatsApp</button></div></form>`);
+}
+function payModal(id,pre){
+  const a=adm(+id),e=enq(a.enquiryId);pre=pre||{amount:pending(a),date:today(),mode:"Online",nextDue:a.nextDue&&a.nextDue>=today()?a.nextDue:""};
+  modal(`<h2>Collect fee — ${esc(e.name)}</h2><div class="summary"><div><span class="sub">Total</span><b>${inrFull(a.total)}</b></div><div><span class="sub">Paid</span><b>${inrFull(paid(a))}</b></div><div><span class="sub">Pending</span><b class="down">${inrFull(pending(a))}</b></div></div>
+  <form id="payForm" class="form" data-id="${a.id}">
+  ${fld("Amount received (₹) *",`<input name="amount" type="number" min="1" max="${pending(a)}" required value="${esc(pre.amount)}">`)}
+  ${fld("Payment date",`<input name="date" type="date" required value="${esc(pre.date)}">`)}
+  ${fld("Mode",`<select name="mode">${opts(MODES,pre.mode)}</select>`)}
+  ${fld("Next due date (if balance remains)",`<input name="nextDue" type="date" min="${today()}" value="${esc(pre.nextDue)}">`)}
+  <div class="actions full"><button type="button" class="btn" data-a="close">Cancel</button><button class="btn ok">Save payment</button></div></form>`);
+}
+let pendingPay=null;
+function recordPayment(st){
+  const p=pendingPay,a=adm(p.id);
+  a.payments.push({id:S.n.p++,amount:p.amount,date:p.date,mode:p.mode,receipt:receiptNo(),by:st?st.name:""});
+  S.tasks.forEach(t=>{if(t.admissionId===a.id&&!t.done)t.done=true});
+  setDue(a,p.nextDue);pendingPay=null;
+  closeModal();commit(`Payment of ${inrFull(p.amount)} recorded${st?" by "+st.name:""}${pending(a)?"":" — marked Paid"}`);
+}
+function payConfirmModal(){
+  const p=pendingPay,a=adm(p.id),e=enq(a.enquiryId),left=pending(a)-p.amount;
+  modal(`<h2>Confirm payment</h2>
+  <div class="summary"><div><span class="sub">Student</span><b style="font-size:15px">${esc(e.name)}</b></div><div><span class="sub">Amount</span><b>${inrFull(p.amount)}</b></div><div><span class="sub">Mode</span><b style="font-size:15px">${esc(p.mode)}</b></div></div>
+  <p class="hint">${left>0?`Balance after this payment: <b>${inrFull(left)}</b>.`:"This payment clears the full balance — the admission will be marked <b>Paid</b>."}</p>
+  <form id="payConfirmForm" class="form" autocomplete="off">
+  ${fld("Staff code *",`<input name="code" type="password" required autocomplete="off" placeholder="Enter your staff code">`,"full")}
+  <p class="hint full">Cash payments need the code of the staff member receiving the money.</p>
+  <div class="actions full"><button type="button" class="btn" data-a="pay-back">Back</button><button class="btn ok">Confirm &amp; mark as paid</button></div></form>`);
+}
+function admModal(id){
+  const a=adm(+id),e=enq(a.enquiryId),[fs,fc]=feeStatus(a),d=(l,v)=>`<div><span class="sub">${l}</span>${v?esc(v):"—"}</div>`;
+  modal(`<h2>${esc(e.name)} ${pill(fs,fc)}</h2>
+  <div class="dl">${d("Phone",e.phone)}${d("Email",e.email)}${d("City",e.city)}${d("Class",course(a.courseId)?.name)}${d("Staff",e.counselor)}${d("Admitted on",fmtDate(a.date))}${a.discount>0?d("Class fee",inrFull(a.fee))+d("Discount",inrFull(a.discount)):""}</div>
+  <div class="summary"><div><span class="sub">${a.discount>0?"Fee after discount":"Total fee"}</span><b>${inrFull(a.total)}</b></div><div><span class="sub">Paid</span><b class="up">${inrFull(paid(a))}</b></div><div><span class="sub">Pending</span><b class="down">${inrFull(pending(a))}</b></div></div>
+  ${a.nextDue&&pending(a)>0?`<p>Next payment due: <b>${fmtDate(a.nextDue)}</b></p>`:""}
+  ${a.links?.length?`<p class="sub">Payment link last sent to ${esc(waFormat(a.links[a.links.length-1].number))} on ${fmtDate(a.links[a.links.length-1].date)}</p>`:""}
+  <h3>Payment history</h3>${a.payments.length?`<table class="fx"><thead><tr><th>Receipt</th><th>Date</th><th>Amount</th><th>Mode</th><th>Received by</th></tr></thead><tbody>${a.payments.map(p=>`<tr><td>${esc(p.receipt)}</td><td>${fmtDate(p.date)}</td><td>${inrFull(p.amount)}</td><td>${esc(p.mode)}</td><td>${esc(p.by||"—")}</td></tr>`).join("")}</tbody></table>`:`<div class="empty">No payments yet.</div>`}
+  <div class="actions"><button class="btn" data-a="close">Close</button><button class="btn" data-a="enq-view" data-id="${e.id}">View enquiry</button>${pending(a)>0?`<button class="btn" data-a="wa" data-id="${a.id}">Send payment link</button><button class="btn ok" data-a="pay" data-id="${a.id}">Collect fee</button>`:""}</div>`);
+}
+function enqViewModal(id){
+  const e=enq(+id),c=course(e.courseId),ad=S.admissions.find(a=>a.enquiryId===e.id),d=(l,v)=>`<div><span class="sub">${l}</span>${v?esc(v):"—"}</div>`;
+  const tasks=S.tasks.filter(t=>t.enquiryId===e.id).sort((a,b)=>a.due.localeCompare(b.due));
+  modal(`<div id="enqView" data-id="${e.id}"><h2>${esc(e.name)} ${pill(e.status,STATUS_C[e.status])}</h2>
+  <div class="dl">${d("Phone",e.phone)}${d("Email",e.email)}${d("City",e.city)}${d("Class",c?.name)}${d("Source",e.source)}${d("Staff",e.counselor)}${d("Enquired on",fmtDate(e.created))}${d("Notes",e.notes)}</div>
+  <h3>Follow-ups</h3>${tasks.map(taskRow).join("")||`<div class="empty">No follow-ups.</div>`}
+  <div class="actions"><button class="btn" data-a="close">Close</button>${e.status!=="Admitted"?`<button class="btn danger" data-a="del-enq" data-id="${e.id}">Delete</button>`:""}<button class="btn" data-a="newtask" data-id="${e.id}">+ Follow-up</button><button class="btn" data-a="enq" data-id="${e.id}">Edit</button>${ad?`<button class="btn" data-a="adm" data-id="${ad.id}">View admission</button>`:""}${e.status==="Open"?`<button class="btn ok" data-a="admit" data-id="${e.id}">Admit</button>`:""}</div></div>`);
+}
+function taskModal(eid){
+  modal(`<h2>New follow-up</h2><form id="taskForm" class="form">
+  ${fld("Enquiry *",`<select name="enquiryId" required>${opts(S.enquiries.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(e=>[e.id,e.name+" — "+e.phone]),eid||"")}</select>`)}
+  ${fld("Type",`<select name="type">${opts(TASK_TYPES,"Call")}</select>`)}
+  ${fld("Due date *",`<input name="due" type="date" required value="${addDays(today(),1)}">`)}
+  ${fld("Note",`<input name="note">`)}
+  <div class="actions full"><button type="button" class="btn" data-a="close">Cancel</button><button class="btn primary">Add</button></div></form>`);
+}
+const emptyRow=(n,t)=>`<tr><td colspan="${n}" class="empty">${t}</td></tr>`;
+function courseStats(c){const ads=S.admissions.filter(a=>a.courseId===c.id);return{enq:S.enquiries.filter(e=>e.courseId===c.id).length,adm:ads.length,coll:ads.reduce((x,a)=>x+paid(a),0)}}
+function viewCourses(){
+  const pg=paginate("crs",S.courses.slice().sort((a,b)=>a.name.localeCompare(b.name)));
+  return`<div class="toolbar"><span class="sub">${S.courses.length} classes</span><span class="sp"></span><button class="btn primary" data-a="course" data-id="">${ic("plus")} Create class</button></div><div class="card flush"><table class="fx"><thead><tr><th>Class</th><th class="wm">Annual fee</th><th class="hm ws">Admissions</th><th class="wa1">Actions</th></tr></thead><tbody>${pg.rows.map(c=>`<tr class="row"><td class="cl"><b>${esc(c.name)}</b></td><td>${inrFull(c.fee)}</td><td class="hm">${courseStats(c).adm}</td><td class="ca"><div class="act"><button class="btn sm" data-a="course-view" data-id="${c.id}">View</button><button class="btn sm" data-a="course" data-id="${c.id}">Edit</button><button class="btn sm danger" data-a="del-course" data-id="${c.id}">Delete</button></div></td></tr>`).join("")||emptyRow(4,"No classes yet. Click <b>Create class</b>.")}</tbody></table>${pg.html}</div>`;
+}
+function courseViewModal(id){
+  const c=course(+id),st=courseStats(c);
+  modal(`<h2>${esc(c.name)}</h2><div class="dl"><div><span class="sub">Standard fee</span>${inrFull(c.fee)}</div><div><span class="sub">Enquiries</span>${st.enq}</div><div><span class="sub">Admissions</span>${st.adm}</div><div><span class="sub">Fees collected</span>${inrFull(st.coll)}</div></div>
+  <div class="actions"><button class="btn" data-a="close">Close</button><button class="btn" data-a="course" data-id="${c.id}">Edit</button></div>`);
+}
+function courseModal(id){
+  const c=id?course(+id):{name:"",duration:"",fee:0};
+  modal(`<h2>${id?"Edit class":"Create class"}</h2><form id="courseForm" class="form" data-id="${id||""}">${fld("Class name *",`<input name="name" required value="${esc(c.name)}">`,"full")}${fld("Annual fee (₹) *",`<input name="fee" type="number" min="0" step="500" required value="${esc(c.fee)}">`)}<div class="actions full"><button type="button" class="btn" data-a="close">Cancel</button><button class="btn primary">Save class</button></div></form>`);
+}
+const staffStats=n=>({enq:S.enquiries.filter(e=>e.counselor===n).length,adm:S.admissions.filter(a=>enq(a.enquiryId)?.counselor===n).length});
+function viewStaff(){
+  const pg=paginate("stf",S.staff.slice().sort((a,b)=>a.name.localeCompare(b.name)));
+  return`<div class="toolbar"><span class="sub">${S.staff.length} staff</span><span class="sp"></span><button class="btn primary" data-a="staff-form" data-id="">${ic("plus")} Create staff</button></div><div class="card flush"><table class="fx"><thead><tr><th>Name</th><th class="hm wm">Phone</th><th class="hm">Email</th><th class="hm wm">Role</th><th class="wa1">Actions</th></tr></thead><tbody>${pg.rows.map(x=>`<tr class="row"><td class="cl"><b>${esc(x.name)}</b></td><td class="cl hm">${esc(x.phone||"—")}</td><td class="cl hm">${esc(x.email||"—")}</td><td class="cl hm">${esc(x.role)}</td><td class="ca"><div class="act"><button class="btn sm" data-a="staff-view" data-id="${x.id}">View</button><button class="btn sm" data-a="staff-form" data-id="${x.id}">Edit</button><button class="btn sm danger" data-a="del-staff" data-id="${x.id}">Delete</button></div></td></tr>`).join("")||emptyRow(5,"No staff yet. Click <b>Create staff</b>.")}</tbody></table>${pg.html}</div>`;
+}
+function staffViewModal(id){
+  const x=staffOf(+id),st=staffStats(x.name),d=(l,v)=>`<div><span class="sub">${l}</span>${v?esc(v):"—"}</div>`;
+  modal(`<h2>${esc(x.name)}</h2><div class="dl">${d("Staff code",x.code)}${d("Role",x.role)}${d("Phone",x.phone)}${d("Email",x.email)}<div><span class="sub">Enquiries handled</span>${st.enq}</div><div><span class="sub">Admissions</span>${st.adm}</div></div>
+  <div class="actions"><button class="btn" data-a="close">Close</button><button class="btn" data-a="staff-form" data-id="${x.id}">Edit</button></div>`);
+}
+function staffModal(id){
+  const x=id?staffOf(+id):{name:"",phone:"",email:"",role:ROLES[0],code:""};
+  modal(`<h2>${id?"Edit staff":"Create staff"}</h2><form id="staffForm" class="form" data-id="${id||""}">${fld("Name *",`<input name="name" required value="${esc(x.name)}">`)}${fld("Role",`<select name="role">${opts(ROLES,x.role)}</select>`)}${fld("Staff code * (used to confirm payments)",`<input name="code" required autocomplete="off" value="${esc(x.code||"")}">`)}${fld("Phone",`<input name="phone" pattern="[0-9+ \\-]{7,15}" value="${esc(x.phone)}">`)}${fld("Email",`<input name="email" type="email" value="${esc(x.email)}">`)}<div class="actions full"><button type="button" class="btn" data-a="close">Cancel</button><button class="btn primary">Save staff</button></div></form>`);
+}
+
+/* ---------- render ---------- */
+const ROUTES={home:["Home",viewHome],enquiries:["Enquiries",viewEnquiries],admissions:["Admissions",viewAdmissions],followups:["Follow-ups",viewFollowups],fees:["Fees payment",viewFees],courses:["Classes",viewCourses],staff:["Staff",viewStaff]};
+const route=()=>{const r=location.hash.slice(1);return ROUTES[r]?r:"home"};
+function tips(){$$("table.fx th,table.fx td:not(.ca)").forEach(c=>{const t=c.innerText.trim();if(t&&t!=="—")c.title=t;else c.removeAttribute("title")});ddAll()}
+function render(){
+  const r=route();$("#title").textContent=ROUTES[r][0];$("#crumb").textContent=new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});$("#view").innerHTML=ROUTES[r][1]();
+  $$(".nav a").forEach(a=>a.classList.toggle("active",a.dataset.r===r));
+  const n=overdueN(),b=$("#badge");b.hidden=!n;b.textContent=n;
+  $("#sidebar").classList.remove("open");$("#scrim").classList.remove("open");
+  tips();
+}
+function refreshView(){const v=$("#enqView");if(v)enqViewModal(v.dataset.id)}
+function commit(m){save();render();if(m)toast(m)}
+function exportCSV(){
+  const rows=[["Name","Phone","Email","City","Class","Source","Staff","Enquired","Status"]];
+  S.enquiries.forEach(e=>rows.push([e.name,e.phone,e.email,e.city,course(e.courseId)?.name||"",e.source,e.counselor,e.created,e.status]));
+  const csv=rows.map(r=>r.map(c=>{let s=String(c??"");if(/^[=+\-@]/.test(s))s="'"+s;return/[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}).join(",")).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="enquiries-"+today()+".csv";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast("Exported "+(rows.length-1)+" enquiries");
+}
+function setDue(a,due){
+  S.tasks=S.tasks.filter(t=>!(t.admissionId===a.id&&!t.done));
+  a.nextDue=pending(a)>0?due||"":"";
+  if(a.nextDue)S.tasks.push({id:S.n.t++,enquiryId:a.enquiryId,admissionId:a.id,type:"Fee Reminder",due:a.nextDue,note:"Collect next instalment",done:false});
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{
+  const go=e.target.closest("[data-go]");if(go){location.hash="#"+go.dataset.go;return}
+  const tab=e.target.closest("[data-tab]");if(tab){ui.tab=tab.dataset.tab;ui.page.enq=1;render();return}
+  const fe=e.target.closest("[data-fetab]");if(fe){ui.fetab=fe.dataset.fetab;ui.page.pend=1;ui.page.pay=1;render();return}
+  const ht=e.target.closest("[data-htab]");if(ht){ui.htab=ht.dataset.htab;ui.page.hEnq=1;ui.page.hFu=1;render();return}
+  const ft=e.target.closest("[data-ftab]");if(ft){ui.ftab=ft.dataset.ftab;ui.page.fu=1;render();return}
+  const pgb=e.target.closest("[data-pg]");if(pgb){const[k,n]=pgb.dataset.pg.split(":");ui.page[k]=+n;render();return}
+  const el=e.target.closest("[data-a]");if(!el)return;
+  const a=el.dataset.a,id=el.dataset.id;
+  if(a==="overlay"){if(e.target===el)closeModal();return}
+  if(el.tagName==="A")e.preventDefault();
+  switch(a){
+    case"close":closeModal();break;
+    case"menu":$("#sidebar").classList.toggle("open");$("#scrim").classList.toggle("open");break;
+    case"theme":{const t=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=t;themeIcon(t);try{localStorage.setItem(THEME_KEY,t)}catch(x){}}break;
+    case"reset":confirmBox("Reset all data to the demo set? Your changes will be lost.",()=>{S=seed();commit("Demo data restored")},"Reset");break;
+    case"enq":enqModal(id);break;
+    case"admit":admitModal(id);break;
+    case"wa":waModal(id);break;
+    case"pay-back":payModal(pendingPay.id,pendingPay);break;
+    case"enq-view":enqViewModal(id);break;
+    case"new-adm":newAdmModal();break;
+    case"adm":admModal(id);break;
+    case"pay":payModal(id);break;
+    case"newtask":taskModal(id);break;
+    case"csv":exportCSV();break;
+    case"course":courseModal(id);break;
+    case"course-view":courseViewModal(id);break;
+    case"staff-form":staffModal(id);break;
+    case"staff-view":staffViewModal(id);break;
+    case"del-staff":{const x=staffOf(+id),n=staffStats(x.name).enq;
+      if(n){toast(`${x.name} handles ${n} enquiries — reassign them first`);break}
+      confirmBox(`Delete staff "${x.name}"?`,()=>{S.staff=S.staff.filter(y=>y.id!==x.id);commit("Staff deleted")})}break;
+    case"del-enq":{const x=enq(+id);confirmBox(`Delete enquiry "${x.name}" and its follow-ups?`,()=>{S.enquiries=S.enquiries.filter(y=>y.id!==x.id);S.tasks=S.tasks.filter(t=>t.enquiryId!==x.id);commit("Enquiry deleted")})}break;
+    case"fee-clear":ui.fq=ui.fclass=ui.fdue=ui.fmode=ui.ffrom=ui.fto="";render();break;
+    case"task-toggle":{const k=S.tasks.find(x=>x.id===+id);k.done=!k.done;commit(k.done?"Marked done":"Follow-up reopened");refreshView()}break;
+    case"del-task":S.tasks=S.tasks.filter(t=>t.id!==+id);commit("Follow-up removed");refreshView();break;
+    case"del-course":{const c=course(+id),st=courseStats(c);
+      if(st.adm){toast(`"${c.name}" has ${st.adm} admission(s) — it can't be deleted`);break}
+      confirmBox(st.enq?`"${c.name}" is linked to ${st.enq} enquiries, which will lose their class. Delete anyway?`:`Delete class "${c.name}"?`,()=>{S.courses=S.courses.filter(x=>x.id!==c.id);commit("Class deleted")})}break;
+  }
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.dataset.toggle){const k=S.tasks.find(x=>x.id===+t.dataset.toggle);k.done=t.checked;commit(t.checked?"Marked done":"");refreshView()}
+  else if(t.dataset.size!==undefined){ui.size=+t.value;ui.page={};render()}
+  else if(t.dataset.ff){ui[t.dataset.ff]=t.value;feeRefresh()}
+  else if(t.id==="aCourse"){const c=course(+t.value);$("#aFee").value=c?c.fee:"";calcFee()}
+});
+document.addEventListener("input",e=>{if(e.target.id==="fq"){ui.fq=e.target.value;feeRefresh()}
+  if(e.target.id==="eq"){ui.q=e.target.value;ui.page.enq=1;$("#enqTable").innerHTML=enqRows();tips()}});
+/* searchable student picker (Create admission) */
+function cbRender(q){
+  const list=$("#cbList");if(!list)return;
+  q=q.trim().toLowerCase();
+  if(!q){list.hidden=true;return}
+  const m=S.enquiries.filter(e=>e.status==="Open"&&(!q||(e.name+" "+e.phone).toLowerCase().includes(q))).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,50);
+  list.innerHTML=m.map(e=>`<div class="cb-item" data-val="${e.id}"><b>${esc(e.name)}</b><span class="sub">${esc(e.phone)} · ${esc(course(e.courseId)?.name||"—")}</span></div>`).join("")+(m.length?"":`<div class="cb-none">No open enquiries match "${esc(q)}"</div>`);
+  list.hidden=false;cbHl(0);
+}
+function cbHl(i){const it=$$("#cbList .cb-item");if(!it.length)return;i=(i+it.length)%it.length;it.forEach((x,j)=>x.classList.toggle("hl",j===i));it[i].scrollIntoView({block:"nearest"})}
+function calcFee(){
+  if(!$("#aFee"))return;
+  if(!$("#aFee").value){$("#aNet").value="";$("#aPend").value="";return}
+  const fee=+$("#aFee").value||0,disc=Math.min(Math.max(+$("#aDisc").value||0,0),fee),net=fee-disc,pd=Math.min(Math.max(+$("#aPaid").value||0,0),net);
+  $("#aNet").value=inrFull(net);$("#aPend").value=inrFull(net-pd);
+}
+document.addEventListener("input",e=>{if(e.target.id==="aDisc"||e.target.id==="aPaid")calcFee()});
+function cbFill(x){
+  const f=$("#admitForm").elements;
+  ["name","phone","email","city"].forEach(k=>{f[k].value=x?x[k]||"":"";f[k].readOnly=!!x});
+  f.source.value=x?x.source:"Walk-in";f.source.disabled=!!x;
+  $$("select[data-dd]").forEach(ddSync);
+}
+function cbPick(item){
+  const v=item.dataset.val,x=v&&enq(+v);
+  $("#nEnq").value=v;$("#cbInput").value=x?x.name+" — "+x.phone:"";
+  $("#cbList").hidden=true;cbFill(x||null);
+  if(x&&course(x.courseId)){$("#aCourse").value=x.courseId;$("#aFee").value=course(x.courseId).fee;calcFee()}
+  if(x&&staffNames().includes(x.counselor))$("#aStaff").value=x.counselor;
+  $$("select[data-dd]").forEach(ddSync);
+}
+document.addEventListener("input",e=>{if(e.target.id==="cbInput"){if($("#nEnq").value){$("#nEnq").value="";cbFill(null)}cbRender(e.target.value)}});
+document.addEventListener("mousedown",e=>{
+  const it=e.target.closest&&e.target.closest(".cb-item");
+  if(it){e.preventDefault();cbPick(it);return}
+  const l=$("#cbList");if(l&&!e.target.closest(".combo"))l.hidden=true;
+});
+document.addEventListener("keydown",e=>{
+  const l=$("#cbList"),open=l&&!l.hidden;
+  if(e.target.id==="cbInput"&&open){
+    const its=$$("#cbList .cb-item"),cur=its.findIndex(x=>x.classList.contains("hl"));
+    if(e.key==="ArrowDown"){e.preventDefault();cbHl(cur+1);return}
+    if(e.key==="ArrowUp"){e.preventDefault();cbHl(cur-1);return}
+    if(e.key==="Enter"){e.preventDefault();if(its[cur])cbPick(its[cur]);return}
+  }
+  if(e.key==="Escape"){if(open)l.hidden=true;else closeModal()}
+});
+document.addEventListener("submit",e=>{
+  e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f)),T=today();
+  if(f.id==="enqForm"){
+    const fields={name:d.name.trim(),phone:d.phone.trim(),email:d.email.trim(),city:d.city.trim(),courseId:+d.courseId||null,source:d.source,counselor:d.counselor,notes:d.notes.trim()};
+    if(f.dataset.id){const x=enq(+f.dataset.id);Object.assign(x,fields);if(d.status)x.status=d.status}
+    else{const x={id:S.n.e++,...fields,created:T,status:"Open"};S.enquiries.push(x);if(d.fuDate)S.tasks.push({id:S.n.t++,enquiryId:x.id,type:d.fuType,due:d.fuDate,note:"First follow-up",done:false})}
+    closeModal();commit(f.dataset.id?"Enquiry updated":"Enquiry added");
+  }else if(f.id==="admitForm"){
+    const cs=course(+d.courseId),fee=cs?cs.fee:+d.fee||0,disc=Math.min(Math.max(+d.discount||0,0),fee),amt=+d.amount||0,total=fee-disc;
+    if(!S.courses.length||!S.staff.length){toast("Add a class and a staff member first (Setup menu)");return}
+    if(amt>total){toast("Paid amount can't exceed the fee after discount");return}
+    let x=enq(+(f.dataset.id||d.enquiryId));
+    if(!x){
+      if(!d.name.trim()||!d.phone.trim()){toast("Enter the student's name and phone");return}
+      x={id:S.n.e++,name:d.name.trim(),phone:d.phone.trim(),email:d.email.trim(),city:d.city.trim(),courseId:+d.courseId,source:d.source,counselor:d.counselor,notes:"",created:T,status:"Open"};
+      S.enquiries.push(x);
+    }
+    x.counselor=d.counselor;
+    const a={id:S.n.a++,enquiryId:x.id,courseId:+d.courseId,total,fee,discount:disc,date:d.date,payments:[],nextDue:""};
+    if(amt>0)a.payments.push({id:S.n.p++,amount:amt,date:d.date,mode:d.mode,receipt:receiptNo()});
+    S.admissions.push(a);x.status="Admitted";x.courseId=a.courseId;
+    S.tasks.forEach(t=>{if(t.enquiryId===x.id&&!t.done)t.done=true});
+    if(d.nextDue)setDue(a,d.nextDue);
+    closeModal();location.hash="#admissions";commit("Admission confirmed");
+    if(pending(a)>0)waModal(a.id);
+  }else if(f.id==="waForm"){
+    const a=adm(+f.dataset.id),num=waNormalize(d.wa);
+    if(num.length<11||num.length>15){toast("Enter a valid WhatsApp number");return}
+    sendPaymentLink(a,num,+f.dataset.amount).then(()=>{pendingPay=null;closeModal();commit("Payment link sent to "+waFormat(num))});
+  }else if(f.id==="payForm"){
+    const a=adm(+f.dataset.id),amt=+d.amount;
+    if(!(amt>0)||amt>pending(a)){toast("Enter an amount up to the pending balance");return}
+    pendingPay={id:a.id,amount:amt,date:d.date,mode:d.mode,nextDue:d.nextDue};
+    if(d.mode==="Cash")payConfirmModal();else waModal(a.id,{amount:amt,back:true});
+  }else if(f.id==="payConfirmForm"){
+    const p=pendingPay,a=adm(p.id),st=S.staff.find(x=>x.code.toLowerCase()===d.code.trim().toLowerCase());
+    if(!st){toast("Invalid staff code");f.elements.code.value="";f.elements.code.focus();return}
+    recordPayment(st);
+  }else if(f.id==="taskForm"){
+    S.tasks.push({id:S.n.t++,enquiryId:+d.enquiryId,type:d.type,due:d.due,note:d.note.trim(),done:false});closeModal();commit("Follow-up added");
+  }else if(f.id==="courseForm"){
+    const v={name:d.name.trim(),fee:+d.fee||0};
+    if(f.dataset.id)Object.assign(course(+f.dataset.id),v);else S.courses.push({id:S.n.c++,...v});
+    closeModal();commit("Class saved");
+  }else if(f.id==="staffForm"){
+    const v={name:d.name.trim(),role:d.role,code:d.code.trim(),phone:d.phone.trim(),email:d.email.trim()};
+    if(S.staff.some(y=>y.code.toLowerCase()===v.code.toLowerCase()&&String(y.id)!==f.dataset.id)){toast("That staff code is already in use");return}
+    if(f.dataset.id){const x=staffOf(+f.dataset.id),old=x.name;Object.assign(x,v);if(old!==v.name)S.enquiries.forEach(e=>{if(e.counselor===old)e.counselor=v.name})}
+    else S.staff.push({id:S.n.s++,...v});
+    closeModal();commit("Staff saved");
+  }
+});
+window.addEventListener("hashchange",render);
+
+/* themed dropdowns: every <select> is wrapped; the native select stays (hidden) as the source of truth */
+let ddOpen=null;
+function ddSync(sel){
+  const wrap=sel.parentElement,btn=wrap.querySelector(".dd-btn");
+  btn.firstChild.textContent=sel.selectedOptions[0]?sel.selectedOptions[0].text:"";
+  wrap.classList.toggle("disabled",sel.disabled);btn.disabled=sel.disabled;
+  wrap.classList.toggle("ph",sel.value===""&&!!sel.closest(".field"));
+}
+function ddBuild(sel){
+  if(sel.dataset.dd)return;sel.dataset.dd="1";sel.tabIndex=-1;
+  const wrap=document.createElement("div");wrap.className="dd";
+  sel.parentNode.insertBefore(wrap,sel);wrap.appendChild(sel);
+  const btn=document.createElement("button");btn.type="button";btn.className="dd-btn";btn.innerHTML=`<span></span>${ic("chev")}`;
+  wrap.appendChild(btn);ddSync(sel);
+}
+function ddClose(){if(ddOpen){ddOpen.list.remove();ddOpen.wrap.classList.remove("open");ddOpen=null}}
+function ddAll(){ddClose();$$("select").forEach(ddBuild);$$("select[data-dd]").forEach(ddSync)}
+function ddHl(i){
+  const it=$$(".dd-item",ddOpen.list);if(!it.length)return;
+  i=(i+it.length)%it.length;ddOpen.hl=i;it.forEach((x,j)=>x.classList.toggle("hl",j===i));it[i].scrollIntoView({block:"nearest"});
+}
+function ddShow(wrap){
+  const sel=wrap.querySelector("select"),btn=wrap.querySelector(".dd-btn");ddClose();if(sel.disabled)return;
+  const list=document.createElement("div");list.className="dd-list";list.setAttribute("role","listbox");
+  list.innerHTML=[...sel.options].map((o,i)=>`<div class="dd-item${i===sel.selectedIndex?" sel":""}" data-i="${i}" role="option">${esc(o.text)}${i===sel.selectedIndex?ic("check"):""}</div>`).join("");
+  document.body.appendChild(list);
+  const r=btn.getBoundingClientRect();list.style.minWidth=Math.max(r.width,170)+"px";
+  list.style.left=Math.max(8,Math.min(r.left,innerWidth-list.offsetWidth-8))+"px";
+  const h=list.offsetHeight,below=innerHeight-r.bottom-8;
+  list.style.top=(h>below&&r.top>below?Math.max(8,r.top-h-4):r.bottom+4)+"px";
+  wrap.classList.add("open");ddOpen={wrap,sel,list,hl:0};ddHl(sel.selectedIndex<0?0:sel.selectedIndex);
+}
+function ddPick(i){
+  const{sel,wrap}=ddOpen;sel.selectedIndex=i;ddClose();
+  sel.dispatchEvent(new Event("change",{bubbles:true}));ddSync(sel);const b=wrap.querySelector(".dd-btn");if(b)b.focus();
+}
+document.addEventListener("click",e=>{const b=e.target.closest(".dd-btn");if(!b)return;const w=b.parentElement;if(ddOpen&&ddOpen.wrap===w)ddClose();else ddShow(w)});
+document.addEventListener("mousedown",e=>{
+  const it=e.target.closest&&e.target.closest(".dd-item");
+  if(it&&ddOpen){e.preventDefault();ddPick(+it.dataset.i);return}
+  if(ddOpen&&!e.target.closest(".dd-list")&&!e.target.closest(".dd.open"))ddClose();
+});
+document.addEventListener("scroll",e=>{if(ddOpen&&!(e.target.closest&&e.target.closest(".dd-list")))ddClose()},true);
+window.addEventListener("resize",ddClose);
+document.addEventListener("keydown",e=>{
+  if(ddOpen){
+    const k=e.key;
+    if(k==="ArrowDown"||k==="ArrowUp"){e.preventDefault();e.stopImmediatePropagation();ddHl(ddOpen.hl+(k==="ArrowDown"?1:-1))}
+    else if(k==="Enter"||k===" "){e.preventDefault();e.stopImmediatePropagation();ddPick(ddOpen.hl)}
+    else if(k==="Escape"){e.stopImmediatePropagation();ddClose()}
+    else if(k==="Tab")ddClose();
+  }else if(e.key==="ArrowDown"&&e.target.classList&&e.target.classList.contains("dd-btn")){e.preventDefault();ddShow(e.target.parentElement)}
+},true);
+
+/* ---------- boot ---------- */
+let th=null;try{th=localStorage.getItem(THEME_KEY)}catch(e){}
+th=th||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+document.documentElement.dataset.theme=th;themeIcon(th);
+S=load()||seed();save();render();
+})();
+</script>
+</body>
+</html>
